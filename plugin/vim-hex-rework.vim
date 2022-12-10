@@ -4,7 +4,7 @@
 "
 "
 
-command! -nargs=0 HexRework :call s:HexRework()
+command! -nargs=0 Hexrework :call HexRework()
 
 function s:ToChar(nr)
 	if a:nr > 31 && a:nr < 127
@@ -18,37 +18,44 @@ function s:ParseHexLine(line_number, line_content)
 		"00000000: 3078 3033 3530 3030 3734 203a 2030 7832  0x03500074 : 0x2
 		"end comment split by two spaces
 		"TODO confirm end comment detect
-		let end_comment_i = match(a:line_content, '\s\s\+', 0)
+		let hex_comment_i = match(a:line_content, '\s\s\+', 0)
 		"TODO check i
-		if end_comment_i != -1
-			let end_comment = a:line_content[end_comment_i+2:]
+		if hex_comment_i != -1
+			let hex_comment_end_i = matchend(a:line_content, '\s\s\+', 0)
+			let ii = match(a:line_content, '\s\s\+', hex_comment_end_i)
+			if ii != -1
+				echo "Error in line " . a:line_number . ": comment detect fail"
+				return []
+			endif
+			let hex_comment = a:line_content[hex_comment_end_i:]
 		else
-			let end_comment = ""
+			let hex_comment = ""
 		endif
-		"echo end_comment
 
-		"let end_comment = join(end_comment_list)
+		"echo hex_comment
+
+		"let hex_comment = join(hex_comment_list)
 		let words = split(a:line_content, " ")
-		let start_address = words[0] "start_address: 00000000:
-		if end_comment_i != -1
-			let hex_content = a:line_content[len(start_address)+1:end_comment_i-1]
+		let hex_address = words[0] "hex_address: 00000000:
+		if hex_comment_i != -1
+			let hex_content = a:line_content[len(hex_address)+1:hex_comment_i-1]
 		else
-			let hex_content = a:line_content[len(start_address)+1:]
+			let hex_content = a:line_content[len(hex_address)+1:]
 		endif
 
-		" echo start_address
+		" echo hex_address
 		" echo hex_content
-		" echo end_comment
-		" echo len(start_address)
+		" echo hex_comment
+		" echo len(hex_address)
 		" echo len(hex_content)
-		" echo len(end_comment)
+		" echo len(hex_comment)
 
-		if len(start_address) != 9
+		if len(hex_address) != 9
 			echo "Error in line " . a:line_number . ": invalid start address"
 			return []
 		endif
 
-		if match(start_address, '^\d\+:$', 0) != 0
+		if match(hex_address, '^\d\+:$', 0) != 0
 			echo "Error in line " . a:line_number . ": invalid start address"
 			return []
 		endif
@@ -66,15 +73,15 @@ function s:ParseHexLine(line_number, line_content)
 			endif
 		endfor
 
-		" if len(end_comment) != 16
+		" if len(hex_comment) != 16
 		" 	echo "error: invalid end comment detect"
 		" 	return null
 		" endif
 
 		let r = []
-		call add(r, start_address)
+		call add(r, hex_address)
 		call add(r, hex_content)
-		call add(r, end_comment)
+		call add(r, hex_comment)
 
 		return r
 endfunction
@@ -246,7 +253,7 @@ function s:DoHexRework(startline, endline)
 
 endfunction
 
-function s:HexRework()
+function HexRework()
 
 	let startline = 1
 	let endline = line('$')
