@@ -34,8 +34,10 @@ function s:ParseHexLine(line_number, line_content)
 
 		"echo hex_comment
 
+		"echo a:line_content
 		"let hex_comment = join(hex_comment_list)
-		let words = split(a:line_content, " ")
+		let words = split(a:line_content)
+		"echo words
 		let hex_address = words[0] "hex_address: 00000000:
 		if hex_comment_i != -1
 			let hex_content = a:line_content[len(hex_address)+1:hex_comment_i-1]
@@ -92,10 +94,24 @@ function s:CheckHexContent(startline, endline)
 
 	let line_number = a:startline
 	for line_content in all_line_contents
+
+		"skip line that all is space, or it's empty line
+		if match(line_content, "^\s*$") != -1
+			let line_number = line_number + 1
+			continue
+		endif
+
+		"check if there's at least one space, so ParseHexLine works
+		if match(line_content, '\s') == -1
+			echo "Error in line " . line_number . ": error format"
+			return 1
+		endif
+
 		let l = s:ParseHexLine(line_number, line_content)
 		if len(l) == 0
 			return 1
 		endif
+
 
 		let line_number = line_number + 1
 	endfor
@@ -150,6 +166,11 @@ function s:DoHexRework(startline, endline)
 
 	let new_lines = []
 	for line_content in all_line_contents
+
+		"ignore empty line
+		if match(line_content, "^\s\*$") != -1
+			continue
+		endif
 
 		"current_line para is not matters
 		let l = s:ParseHexLine(current_line, line_content)
