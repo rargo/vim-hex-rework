@@ -92,11 +92,14 @@ function s:CheckHexContent(startline, endline)
 
 	let all_line_contents = getline(a:startline, a:endline)
 
+	let line_parse_result = []
+
 	let line_number = a:startline
 	for line_content in all_line_contents
 
 		"skip line that all is space, or it's empty line
 		if match(line_content, "^\s*$") != -1
+			call add(line_parse_result, [])
 			let line_number = line_number + 1
 			continue
 		endif
@@ -104,19 +107,19 @@ function s:CheckHexContent(startline, endline)
 		"check if there's at least one space, so ParseHexLine works
 		if match(line_content, '\s') == -1
 			echo "Error in line " . line_number . ": error format"
-			return 1
+			return []
 		endif
 
 		let l = s:ParseHexLine(line_number, line_content)
 		if len(l) == 0
-			return 1
+			return []
 		endif
 
-
+		call add(line_parse_result, l)
 		let line_number = line_number + 1
 	endfor
 
-	return 0
+	return line_parse_result
 endfunction
 
 function s:EndComment(hex_contents)
@@ -155,31 +158,24 @@ function s:EndComment(hex_contents)
 	return comment
 endfunction
 
-function s:DoHexRework(startline, endline)
+function s:DoHexRework(startline, endline, line_parse_result)
 
-	let all_line_contents = getline(a:startline, a:endline)
-	let line_content = ""
-	
 	let start_address = 0
 	let last_line_left_hex_chs = []
 	let current_line = a:startline
 
 	let new_lines = []
-	for line_content in all_line_contents
+	for l in a:line_parse_result
 
-		"ignore empty line
-		if match(line_content, "^\s\*$") != -1
+		"skip line that has no content
+		if len(l) == 0
 			continue
 		endif
 
-		"current_line para is not matters
-		let l = s:ParseHexLine(current_line, line_content)
 		"echo "comment: " . l[2]
 		"echo l
 		let hex_content = l[1]
 		"echo "hex_content: " . hex_content
-
-		"echo "line_content:     " . line_content
 
 		"remove space
 		let hex_content = substitute(hex_content, " ", '','g')
@@ -234,6 +230,7 @@ function s:DoHexRework(startline, endline)
 		if len(last_line_left_hex_chs) != 0
 			let start_address = start_address - len(last_line_left_hex_chs)
 		endif
+
 		"let new_line_content = new_line_content . hex_string
 		"add comment
 	endfor
@@ -275,16 +272,14 @@ function s:DoHexRework(startline, endline)
 endfunction
 
 function HexRework()
-
 	let startline = 1
 	let endline = line('$')
 
-	let check = s:CheckHexContent(startline, endline)
-	if check != 0
+	let line_parse_result = s:CheckHexContent(startline, endline)
+	if line_parse_result == []
 		return
 	endif
 
-	call s:DoHexRework(startline, endline)
-
+	call s:DoHexRework(startline, endline, line_parse_result)
 endfunction
 
