@@ -57,7 +57,7 @@ function s:ParseHexLine(line_number, line_content)
 			return []
 		endif
 
-		if match(hex_address, '^\d\+:$', 0) != 0
+		if match(hex_address, '^[0-9a-f]\+:$', 0) != 0
 			echo "Error in line " . a:line_number . ": invalid start address"
 			return []
 		endif
