@@ -4,7 +4,7 @@ Vim embeds with xxd to display hex strings,  the hex string can be changed only 
 
 
 
-vim-hex-rework add one command: Hexrework.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it suitable for xxd format, 
+vim-hex-rework add one command: **Hexrework**.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it suitable for xxd format, 
 
 So then when the file is written, the binary file is updated accordingly.
 
