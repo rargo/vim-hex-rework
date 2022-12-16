@@ -8,7 +8,7 @@ vim-hex-rework add one command: **Hexrework**.  You can insert new hex character
 
 ### .vimrc configure:
 
-Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. When the buffer is written is written, Vim will use xxd to convert buffer content back to binary file, you can add more file format if necessary.
+Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. When the buffer is written, Vim will use xxd to convert buffer content back to binary file, you can add more file format if necessary.
 
 ```
 "binary file, use xxd to hex editing
