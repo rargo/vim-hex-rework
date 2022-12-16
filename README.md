@@ -8,7 +8,7 @@ vim-hex-rework add one command: **Hexrework**.  You can insert new hex character
 
 ### .vimrc configure:
 
-Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. When the buffer is written, Vim will use xxd to convert buffer content back to binary file, you can add more file format if necessary.
+Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. When the buffer is written, Vim will use xxd to convert buffer content back to binary file. You can add more file format if necessary.
 
 ```
 "binary file, use xxd to hex editing
@@ -55,7 +55,7 @@ Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's 
 
 - Keep the address part original format, that is 8 bytes character plus a ':',  the address content does not matter, Hexrework will recalculate the right address.
 
-- The hex string part **can't not be odd number characters, and can't not be separated by two space and more**, because two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
+- The hex string part **can't not be odd number characters, and can't not be separated by two space or more**, because two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
 
 ```
 aabbcc 3839 3637
@@ -65,7 +65,7 @@ aabbccdd38393637
 
 - Comment part start with two spaces, comment parts can be omitted, 'Hexrework' Command will regenerate comment part 
 
-- 'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
+'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
 
 
 
@@ -133,4 +133,4 @@ augroup END
 
 3. 注释部分以两个空格开始， 注释不需要是对的，也可以忽略不用注释，Hexrework命令会自动重新生成注释部分
 
-4. 如果格式非法，会有提示，不会进行修改
+如果格式非法，会有提示，不会进行修改
