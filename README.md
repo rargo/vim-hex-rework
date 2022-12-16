@@ -2,13 +2,7 @@
 
 Vim embeds with xxd to display hex strings,  the hex string can be changed only when the number of hex string is the same, thus you can't insert new hex character, or delete some existing hex character.
 
-
-
-vim-hex-rework add one command: **Hexrework**.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it suitable for xxd format, 
-
-So then when the file is written, the binary file is updated accordingly.
-
-
+vim-hex-rework add one command: **Hexrework**.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it match with xxd format. When the file is written, the binary file is updated accordingly.
 
 ## Usage
 
@@ -34,8 +28,6 @@ You can define another command if you feel 'Hexrework' command is not convenient
 
 `command! -nargs=0 MyCommand :call HexRework()`
 
-
-
 ### Hex file edit:
 
 A Hex dump string is shown as below:
@@ -57,7 +49,6 @@ Change the hex string part directly, for example:
 - Modify '00' to 'ee'： `bbcc 3839 3637 abed ff 3839 eeee eeee`
 
 Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's content to match with xxd format. Save the file, then the binary file is updated accordingly.
-
 
 
 Editing rules:
