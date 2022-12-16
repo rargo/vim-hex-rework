@@ -1,12 +1,12 @@
 ## About
 
-Vim incoperate with xxd to display hex strings,  the hex string can be change only when the number of hex string is the same, thus you can't insert new hex, or delete some exist hex string.
+Vim embeds with xxd to display hex strings,  the hex string can be changed only when the number of hex string is the same, thus you can't insert new hex character, or delete some existing hex character.
 
 
 
 vim-hex-rework add one command: Hexrework.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it suitable for xxd format, 
 
-so then when the file is written, binary file is update accordingly.
+So then when the file is written, the binary file is updated accordingly.
 
 
 
@@ -14,7 +14,7 @@ so then when the file is written, binary file is update accordingly.
 
 ### .vimrc configure:
 
-Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. when a binary is written, Vim use xxd to convert buffer content back to binary file, you can add more format if nesisary.
+Add the following code in your .vimrc files, when a binary file is opened, Vim use xxd to hex dump the file, display it in a buffer. When the buffer is written is written, Vim will use xxd to convert buffer content back to binary file, you can add more file format if necessary.
 
 ```
 "binary file, use xxd to hex editing
@@ -30,7 +30,7 @@ au BufWritePost *.bin,*.exe set nomod | endif
 augroup END
 ```
 
-You can define another command if you feel 'Hexrework' command is not convinient to type.
+You can define another command if you feel 'Hexrework' command is not convenient to type.
 
 `command! -nargs=0 MyCommand :call HexRework()`
 
@@ -38,11 +38,11 @@ You can define another command if you feel 'Hexrework' command is not convinient
 
 ### Hex file edit:
 
-A Hex dump string is show below:
+A Hex dump string is shown as below:
 
 `00000000: bbcc 3839 3637 abed ffff 3839 0000 0000 ..8967....89....`
 
-The line is make of by the following parts:
+The line is made of by the following parts:
 
 - Address:       `00000000:`
 - Hex string:   `bbcc 3839 3637 abed ffff 3839 0000 0000`
@@ -56,15 +56,15 @@ Change the hex string part directly, for example:
 
 - Modify '00' to 'ee'： `bbcc 3839 3637 abed ff 3839 eeee eeee`
 
-Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's content to match with xxd format. Save the file, then the binary file is update accordingly.
+Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's content to match with xxd format. Save the file, then the binary file is updated accordingly.
 
 
 
 Editing rules:
 
-1. Keep the address part origin format, that is 8 bytes character plus a ':',  the address content is not matter, Hexrework will recalculate the right address.
+1. Keep the address part original format, that is 8 bytes character plus a ':',  the address content does not matter, Hexrework will recalculate the right address.
 
-2. The hex string part cann't not be even number characters, and cann't not be divided by two space and more, becase two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
+2. The hex string part can't not be odd number characters, and can't not be separated by two space and more, because two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
 
 ```
 aabbcc 3839 3637
@@ -72,9 +72,9 @@ aa bb cc 38 39 36 37
 aabbccdd38393637
 ```
 
-4. Comment part start with two spaces, comment parts can be omit, 'Hexrework' Command will regenerate comment part 
+4. Comment part start with two spaces, comment parts can be omitted, 'Hexrework' Command will regenerate comment part 
 
-5.  'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modify.
+5.  'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
 
 
 
