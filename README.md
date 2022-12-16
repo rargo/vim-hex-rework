@@ -2,7 +2,7 @@
 
 Vim embeds with xxd to display hex strings,  the hex string can be changed only when the number of hex string is the same, thus you can't insert new hex character, or delete some existing hex character.
 
-vim-hex-rework add one command: **Hexrework**.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change the buffer's content, make it match with xxd format. When the file is written, the binary file is updated accordingly.
+vim-hex-rework add one command: **Hexrework**.  You can insert new hex characters, delete hex characters in the hex string,  then run 'Hexrework' command, the 'Hexrework' command will change current buffer's content, make it match with xxd format. When the file is written, the binary file is updated accordingly.
 
 ## Usage
 
