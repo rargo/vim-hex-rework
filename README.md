@@ -28,7 +28,7 @@ You can define another command if you feel 'Hexrework' command is not convenient
 
 `command! -nargs=0 MyCommand :call HexRework()`
 
-### Hex file edit:
+### Hex file edit
 
 A Hex dump string is shown as below:
 
@@ -51,7 +51,7 @@ Change the hex string part directly, for example:
 Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's content to match with xxd format. Save the file, then the binary file is updated accordingly.
 
 
-Editing rules:
+### Editing rules
 
 - Keep the address part original format, that is 8 bytes character plus a ':',  the address content does not matter, Hexrework will recalculate the right address.
 
@@ -118,7 +118,7 @@ augroup END
 
 然后执行Hexrework命令, Hexrework命令将把所有的缓冲区的内容重新修改使其符合xxd格式。 再保存文件，即完成对bin文件的修改
 
-对编辑修改的要求：
+### 编辑要求
 
 1. 保持前面的地址部分为8个字节地址值加:号, 这里不要求地址值是正确的，
    Hexrework命令会自动重新计算地址部分
