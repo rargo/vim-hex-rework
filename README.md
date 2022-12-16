@@ -53,9 +53,9 @@ Execute 'Hexrework' command, 'Hexrework' command will modify the whole buffer's 
 
 Editing rules:
 
-1. Keep the address part original format, that is 8 bytes character plus a ':',  the address content does not matter, Hexrework will recalculate the right address.
+- Keep the address part original format, that is 8 bytes character plus a ':',  the address content does not matter, Hexrework will recalculate the right address.
 
-2. The hex string part can't not be odd number characters, and can't not be separated by two space and more, because two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
+- The hex string part **can't not be odd number characters, and can't not be separated by two space and more**, because two space is used for detect the comment part.  One space or no space between characters are accepted, like below:
 
 ```
 aabbcc 3839 3637
@@ -63,9 +63,9 @@ aa bb cc 38 39 36 37
 aabbccdd38393637
 ```
 
-4. Comment part start with two spaces, comment parts can be omitted, 'Hexrework' Command will regenerate comment part 
+- Comment part start with two spaces, comment parts can be omitted, 'Hexrework' Command will regenerate comment part 
 
-5.  'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
+- 'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
 
 
 
