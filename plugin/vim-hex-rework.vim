@@ -70,7 +70,7 @@ function s:ParseHexLine(line_number, line_content)
 			endif
 
 			if len(hex_ch)%2 != 0
-				echo "Error in line " . a:line_number . ": detects even hex digits"
+				echo "Error in line " . a:line_number . ": detects odd hex digits"
 				return []
 			endif
 		endfor
