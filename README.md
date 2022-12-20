@@ -67,7 +67,9 @@ aabbccdd38393637
 
 'Hexrework' will check the buffer content first, if there is some error detect, error message will be shown, the buffer content will not be modified.
 
+## TODO
 
+When work with big file(> 64KB), this script is slow, need to be optimized.
 
 ## 关于
 
