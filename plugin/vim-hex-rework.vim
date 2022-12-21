@@ -110,16 +110,48 @@ function s:CheckHexContent(startline, endline)
 	return line_parse_result
 endfunction
 
+function s:ToChar(hex)
+	let nr = str2nr(a:hex, 16)
+	" condiction from xxd source code
+	if nr > 31 && nr < 127
+		return nr2char(nr)
+	else
+		return '.'
+	endif
+endfunction
+
 function s:NewLineContent(line_start_address, hex_chs)
+
 	let new_line_content = printf("%08x: ", a:line_start_address)
+	let comment = " "
 	for i in range(len(a:hex_chs)/2)
-		let hex = a:hex_chs[i*2] . a:hex_chs[i*2+1]
-		let new_line_content = new_line_content . hex . " "
+		let hex1 = a:hex_chs[i*2] 
+		let hex2 = a:hex_chs[i*2+1]
+		let new_line_content = new_line_content . hex1 . hex2 . " "
+
+		"for speed, don't call ToChar function
+		let nr = str2nr(hex1, 16)
+		" condiction from xxd source code
+		if nr > 31 && nr < 127
+			let comment = comment . nr2char(nr)
+		else
+			let comment = comment . '.'
+		endif
+
+		let nr = str2nr(hex2, 16)
+		" condiction from xxd source code
+		if nr > 31 && nr < 127
+			let comment = comment . nr2char(nr)
+		else
+			let comment = comment . '.'
+		endif
+		"let comment = comment . s:ToChar(hex1) . s:ToChar(hex2)
 	endfor
 
 	if len(a:hex_chs)%2 != 0
 		let hex = a:hex_chs[-1]
 		let new_line_content = new_line_content . hex . " "
+		let comment = comment . s:ToChar(hex)
 	endif
 
 	let total_chs = 10 + 8*5 "start_address + hex content
@@ -129,17 +161,6 @@ function s:NewLineContent(line_start_address, hex_chs)
 			let new_line_content = new_line_content . " "
 		endfor
 	endif
-
-	let comment = " "
-	for hex in a:hex_chs
-		let nr = str2nr(hex, 16)
-		" condiction from xxd source code
-		if nr > 31 && nr < 127
-			let comment = comment . nr2char(nr)
-		else
-			let comment = comment . '.'
-		endif
-	endfor
 
 	let new_line_content = new_line_content . comment
 	return new_line_content
@@ -158,71 +179,52 @@ function s:DoHexRework(startline, endline, line_parse_result)
 			continue
 		endif
 
-		let hex_content = l[1]
-
-		"remove space
-		let hex_content = substitute(hex_content, " ", '','g')
-
+		let hex_content = substitute(l[1], " ", '','g')
 		let _hex_chs = split(hex_content, '\zs')
-
-		"copy the hex content that last line left
-		let hex_chs = line_hex_chs[:]
-		let line_hex_chs = []
-
 		for i in range(len(_hex_chs)/2)
 			let hex = _hex_chs[i*2] . _hex_chs[i*2+1]
-			call add(hex_chs, hex)
+			call add(line_hex_chs, hex)
 		endfor
 		" echo "hex_chs:"
 		" echo hex_chs
 		
-		for hex_ch in hex_chs
-			"echo hex_ch
-			if start_address%16 == 0
-				let line_start_address = start_address
-			endif
+		let left_len = len(line_hex_chs) 
+		let i = 0
+		while (left_len >= 16) 
+			let new_line_content = s:NewLineContent(start_address, line_hex_chs[i:i+15])
+			call setline(current_line, new_line_content)
 
-			call add(line_hex_chs, hex_ch)
-
-			let start_address = start_address + 1
-			if start_address%16 == 0
-				let new_line_content = s:NewLineContent(line_start_address, line_hex_chs)
-				"echo "@new_line_content: " . new_line_content
-				let line_hex_chs = []
-
-				"call add(new_lines, new_line_content)
-				"echo "set line:" . current_line
-				call setline(current_line, new_line_content)
-				let current_line = current_line + 1
-			endif
-		endfor
-
-		"when the for loop finish, if there is some character not proceed in line_hex_chs, 
-		"the start_address adds the length of line_hex_chs in the for loop, 
-		"but that's wrong, should leave it to the next line for loop, so sub it here
-		if len(line_hex_chs) != 0
-			let start_address = start_address - len(line_hex_chs)
+			let current_line = current_line + 1
+			let start_address = start_address + 16
+			let left_len = left_len - 16
+			let i = i + 16
+		endwhile
+		
+		if left_len > 0
+			let line_hex_chs = line_hex_chs[i:i+left_len-1]
+		else
+			let line_hex_chs = []
 		endif
 	endfor
 
-	let lines_n = current_line - 1
+	let new_endline = current_line - 1
 
 	if len(line_hex_chs) != 0
-		let new_line_content = s:NewLineContent(line_start_address, line_hex_chs)
+		let new_line_content = s:NewLineContent(start_address, line_hex_chs)
 		"echo "&new_line_content: " . new_line_content 
 		if current_line > a:endline
 			"echo "append line:" . current_line
-			call append(current_line-1, new_line_content)
+			call append(new_endline, new_line_content)
 		else
 			"echo "set line:" . current_line
 			call setline(current_line, new_line_content)
-			let lines_n = current_line
+			let new_endline = current_line
 		endif
 	endif
 
 	"check if some line need to be delete
-	if lines_n < a:endline
-		for i in range(lines_n+1, a:endline)
+	if new_endline < a:endline
+		for i in range(new_endline+1, a:endline)
 			call setline(i, '')
 		endfor
 	endif
