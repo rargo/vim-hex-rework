@@ -1,18 +1,6 @@
 "vim-hex-rework is for change text in vim hex mode, working with xxd
-"
-"
-"
-"
 
 command! -nargs=0 Hexrework :call HexRework()
-
-function s:ToChar(nr)
-	if a:nr > 31 && a:nr < 127
-		return nr2char(a:nr)
-	else
-		return '.'
-	endif
-endfunction
 
 function s:ParseHexLine(line_number, line_content)
 		"00000000: 3078 3033 3530 3030 3734 203a 2030 7832  0x03500074 : 0x2
@@ -70,7 +58,7 @@ function s:ParseHexLine(line_number, line_content)
 			endif
 
 			if len(hex_ch)%2 != 0
-				echo "Error in line " . a:line_number . ": detects even hex digits"
+				echo "Error in line " . a:line_number . ": detects odd hex digits"
 				return []
 			endif
 		endfor
@@ -122,69 +110,65 @@ function s:CheckHexContent(startline, endline)
 	return line_parse_result
 endfunction
 
-function s:EndComment(hex_contents)
-	let comment = ""
+function s:NewLineContent(line_start_address, hex_chs)
+	let new_line_content = printf("%08x: ", a:line_start_address)
+	for i in range(len(a:hex_chs)/2)
+		let hex = a:hex_chs[i*2] . a:hex_chs[i*2+1]
+		let new_line_content = new_line_content . hex . " "
+	endfor
 
-	let hex_n = len(a:hex_contents)
-	let pad_chs = 16-hex_n
+	if len(a:hex_chs)%2 != 0
+		let hex = a:hex_chs[-1]
+		let new_line_content = new_line_content . hex . " "
+	endif
 
-	"echo pad_chs
-	"00000040: 3839 6162 6364 6566 3031 3233 3637       89abcdef012367
-	if (pad_chs > 0)
-		let total_chs = 8*5 
-		let chs = hex_n/2*5
-		if hex_n%2 != 0
-			let chs = chs + 3
-		endif
-
-		" echo total_chs
-		" echo chs
-		for i in range(total_chs-chs)
-			let comment = comment . " "
+	let total_chs = 10 + 8*5 "start_address + hex content
+	let len_new_line = len(new_line_content) 
+	if (len_new_line < total_chs) 
+		for i in range(total_chs-len_new_line)
+			let new_line_content = new_line_content . " "
 		endfor
 	endif
 
-	let comment = comment . " "
-
-	for hex in a:hex_contents
+	let comment = " "
+	for hex in a:hex_chs
 		let nr = str2nr(hex, 16)
-		"echo "nr:" . nr
-		let ch = s:ToChar(nr)
-		"echo "ch:" . ch
-		let comment = comment . ch
+		" condiction from xxd source code
+		if nr > 31 && nr < 127
+			let comment = comment . nr2char(nr)
+		else
+			let comment = comment . '.'
+		endif
 	endfor
 
-	"echo comment
-	return comment
+	let new_line_content = new_line_content . comment
+	return new_line_content
 endfunction
 
 function s:DoHexRework(startline, endline, line_parse_result)
 
 	let start_address = 0
-	let last_line_left_hex_chs = []
+	let line_hex_chs = []
 	let current_line = a:startline
 
 	let new_lines = []
 	for l in a:line_parse_result
-
 		"skip line that has no content
 		if len(l) == 0
 			continue
 		endif
 
-		"echo "comment: " . l[2]
-		"echo l
 		let hex_content = l[1]
-		"echo "hex_content: " . hex_content
 
 		"remove space
 		let hex_content = substitute(hex_content, " ", '','g')
-		"echo "hex_content: " . hex_content
 
 		let _hex_chs = split(hex_content, '\zs')
 
-		let hex_chs = last_line_left_hex_chs[:]
-		let last_line_left_hex_chs = []
+		"copy the hex content that last line left
+		let hex_chs = line_hex_chs[:]
+		let line_hex_chs = []
+
 		for i in range(len(_hex_chs)/2)
 			let hex = _hex_chs[i*2] . _hex_chs[i*2+1]
 			call add(hex_chs, hex)
@@ -192,30 +176,19 @@ function s:DoHexRework(startline, endline, line_parse_result)
 		" echo "hex_chs:"
 		" echo hex_chs
 		
-		"echo len(hex_chs)
 		for hex_ch in hex_chs
-			"echo "A"
 			"echo hex_ch
 			if start_address%16 == 0
-				" echo "1. start_address: " . start_address
-				let new_line_content = printf("%08x: ", start_address)
+				let line_start_address = start_address
 			endif
 
-			call add(last_line_left_hex_chs, hex_ch)
+			call add(line_hex_chs, hex_ch)
 
 			let start_address = start_address + 1
 			if start_address%16 == 0
-				"echo "2. start_address: " . start_address
-				""echo last_line_left_hex_chs
-				"echo "last_line_left_hex_chs:"
-				"echo last_line_left_hex_chs
-				for i in range(8)
-					let hex = last_line_left_hex_chs[i*2] . last_line_left_hex_chs[i*2+1]
-					let new_line_content = new_line_content . hex . " "
-				endfor
-				let new_line_content = new_line_content . s:EndComment(last_line_left_hex_chs)
-				"echo "@new line_content: " . new_line_content
-				let last_line_left_hex_chs = []
+				let new_line_content = s:NewLineContent(line_start_address, line_hex_chs)
+				"echo "@new_line_content: " . new_line_content
+				let line_hex_chs = []
 
 				"call add(new_lines, new_line_content)
 				"echo "set line:" . current_line
@@ -224,34 +197,19 @@ function s:DoHexRework(startline, endline, line_parse_result)
 			endif
 		endfor
 
-		"when the for loop finish, if there is some character not proceed in last_line_left_hex_chs, 
-		"the start_address adds the length of last_line_left_hex_chs in the for loop, 
+		"when the for loop finish, if there is some character not proceed in line_hex_chs, 
+		"the start_address adds the length of line_hex_chs in the for loop, 
 		"but that's wrong, should leave it to the next line for loop, so sub it here
-		if len(last_line_left_hex_chs) != 0
-			let start_address = start_address - len(last_line_left_hex_chs)
+		if len(line_hex_chs) != 0
+			let start_address = start_address - len(line_hex_chs)
 		endif
-
-		"let new_line_content = new_line_content . hex_string
-		"add comment
 	endfor
-
 
 	let lines_n = current_line - 1
 
-	if len(last_line_left_hex_chs) != 0
-		" echo "tail last_line_left_hex_chs:"
-		" echo last_line_left_hex_chs
-		for i in range(len(last_line_left_hex_chs)/2)
-			let hex = last_line_left_hex_chs[i*2] . last_line_left_hex_chs[i*2+1]
-			let new_line_content = new_line_content . hex . " "
-		endfor
-
-		if len(last_line_left_hex_chs)%2 != 0
-			let hex = last_line_left_hex_chs[-1]
-			let new_line_content = new_line_content . hex . " "
-		endif
-		let new_line_content = new_line_content . s:EndComment(last_line_left_hex_chs)
-		"echo "&new line_content: " . new_line_content 
+	if len(line_hex_chs) != 0
+		let new_line_content = s:NewLineContent(line_start_address, line_hex_chs)
+		"echo "&new_line_content: " . new_line_content 
 		if current_line > a:endline
 			"echo "append line:" . current_line
 			call append(current_line-1, new_line_content)
@@ -271,15 +229,21 @@ function s:DoHexRework(startline, endline, line_parse_result)
 
 endfunction
 
-function HexRework()
+function! HexRework()
 	let startline = 1
 	let endline = line('$')
 
+	let start_t = reltime()
 	let line_parse_result = s:CheckHexContent(startline, endline)
+	let t = reltimefloat(reltime(start_t))
+	echom "CheckHexContent takes " . t . " seconds"
 	if line_parse_result == []
 		return
 	endif
 
+	let start_t = reltime()
 	call s:DoHexRework(startline, endline, line_parse_result)
+	let t = reltimefloat(reltime(start_t))
+	echom "DoHexRework takes " . t . " seconds"
 endfunction
 
